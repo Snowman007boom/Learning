@@ -1,6 +1,9 @@
 package com.example.leetcode.solution;
 
-/*
+import com.example.learning.A;
+import org.apache.logging.log4j.util.Strings;
+
+/*  https://leetcode-cn.com/problems/string-to-integer-atoi/
 请你来实现一个 myAtoi(string s) 函数，使其能将字符串转换成一个 32 位有符号整数（类似 C/C++ 中的 atoi 函数）。
 
 函数 myAtoi(string s) 的算法如下：
@@ -20,12 +23,38 @@ public class MyAtoi {
     public static void main(String[] args) {
         myAtoi("    1234567891011121314151612131415  ");
     }
+
     public static int myAtoi(String s) {
-        String a = s.trim();
-        System.out.println(a);
-        Double longA = Double.valueOf(a);
-        System.out.println(longA);
-        return 0;
+        s = s.trim();
+        int resInt = 0 ;
+        if (Strings.isNotEmpty(s)) {
+            int length = 0;//为了判断是不是第一个字符，取正负号
+            StringBuffer sb = new StringBuffer();
+            char[] ArrayS = s.toCharArray();
+            for (char temp : ArrayS) {
+                length++;
+                if ((temp == '-' || temp == '+') && length == 1) {//取第一个字符是不是符号
+                    sb.append(temp);
+                    continue;
+                } else if (temp >= 0 || temp <= 9) {//该字符为数字
+                    sb.append(temp);
+                    continue;
+                }else{//非数字
+                    break;
+                }
+            }
+            double resDb =Double.valueOf(sb.toString());
+            if(resDb>=Math.pow(2,31)-1 ){
+                resDb =Math.pow(2,31)-1;
+            }else if(resDb<=-Math.pow(2,31)){
+                resDb =-Math.pow(2,31);
+            }
+            resInt = (int) resDb;
+        }else {
+            return resInt;
+        }
+
+        return resInt;
     }
 
 }
