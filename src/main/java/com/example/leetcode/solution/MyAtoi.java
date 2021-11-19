@@ -3,6 +3,9 @@ package com.example.leetcode.solution;
 import com.example.learning.A;
 import org.apache.logging.log4j.util.Strings;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /*  https://leetcode-cn.com/problems/string-to-integer-atoi/
 请你来实现一个 myAtoi(string s) 函数，使其能将字符串转换成一个 32 位有符号整数（类似 C/C++ 中的 atoi 函数）。
 
@@ -21,40 +24,104 @@ import org.apache.logging.log4j.util.Strings;
  */
 public class MyAtoi {
     public static void main(String[] args) {
-        myAtoi("    1234567891011121314151612131415  ");
+        String str = "+42-51";
+        //垃圾解法一：
+        System.out.println(myAtoi("+-42"));
+
+        //高级解法
+        Automaton automaton = new Automaton();
+        int length = str.length();
+        for (int i = 0; i < length; ++i) {
+            automaton.get(str.charAt(i));
+        }
+        System.out.println((automaton.sign * automaton.ans));
+
     }
 
     public static int myAtoi(String s) {
         s = s.trim();
-        int resInt = 0 ;
-        if (Strings.isNotEmpty(s)) {
+        double resDb = 0;
+        int resInt = 0;
+        if (s != null && s.length() > 0) {
             int length = 0;//为了判断是不是第一个字符，取正负号
+            boolean haschar = false;//用来判断是否有符号
             StringBuffer sb = new StringBuffer();
             char[] ArrayS = s.toCharArray();
             for (char temp : ArrayS) {
                 length++;
                 if ((temp == '-' || temp == '+') && length == 1) {//取第一个字符是不是符号
                     sb.append(temp);
+                    haschar = true;
                     continue;
-                } else if (temp >= 0 || temp <= 9) {//该字符为数字
+                } else if (temp >= '0' && temp <= '9') {//该字符为数字
                     sb.append(temp);
                     continue;
-                }else{//非数字
+                } else {//非数字
                     break;
                 }
             }
-            double resDb =Double.valueOf(sb.toString());
-            if(resDb>=Math.pow(2,31)-1 ){
-                resDb =Math.pow(2,31)-1;
-            }else if(resDb<=-Math.pow(2,31)){
-                resDb =-Math.pow(2,31);
+            if (haschar) {//有符号
+                if (sb.length() > 1) {
+                    resDb = Double.valueOf(sb.toString());
+                }
+            } else {
+                if (sb.length() > 0) {
+                    resDb = Double.valueOf(sb.toString());
+                }
+            }
+
+
+            if (resDb >= Math.pow(2, 31) - 1) {
+                resDb = Math.pow(2, 31) - 1;
+            } else if (resDb <= -Math.pow(2, 31)) {
+                resDb = -Math.pow(2, 31);
             }
             resInt = (int) resDb;
-        }else {
+        } else {
             return resInt;
         }
 
         return resInt;
     }
 
+    public static void myAtoiAd() {
+
+    }
+
 }
+
+class Automaton {
+    public int sign = 1;
+    public long ans = 0;
+    private String state = "start";
+    private Map<String, String[]> table = new HashMap<String, String[]>() {{
+        put("start", new String[]{"start", "signed", "in_number", "end"});
+        put("signed", new String[]{"end", "end", "in_number", "end"});
+        put("in_number", new String[]{"end", "end", "in_number", "end"});
+        put("end", new String[]{"end", "end", "end", "end"});
+    }};
+
+    public void get(char c) {
+        state = table.get(state)[get_col(c)];
+        if ("in_number".equals(state)) {
+            ans = ans * 10 + c - '0';
+            ans = sign == 1 ? Math.min(ans, (long) Integer.MAX_VALUE) : Math.min(ans, -(long) Integer.MIN_VALUE);
+        } else if ("signed".equals(state)) {
+            sign = c == '+' ? 1 : -1;
+        }
+    }
+
+    private int get_col(char c) {
+        if (c == ' ') {
+            return 0;
+        }
+        if (c == '+' || c == '-') {
+            return 1;
+        }
+        if (Character.isDigit(c)) {
+            return 2;
+        }
+        return 3;
+    }
+}
+
